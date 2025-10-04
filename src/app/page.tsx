@@ -252,33 +252,33 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <Shield className="h-8 w-8 text-green-400" />
-              <span className="text-2xl font-bold gradient-text">BlockVote</span>
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-green-400" />
+              <span className="text-xl sm:text-2xl font-bold gradient-text">BlockVote</span>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {!isMounted ? (
-                <div className="w-32 h-10 bg-gray-700 rounded-lg animate-pulse"></div>
+                <div className="w-20 h-8 sm:w-32 sm:h-10 bg-gray-700 rounded-lg animate-pulse"></div>
               ) : isConnected ? (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   <div className="w-2 h-2 bg-green-400 rounded-full pulse-animation"></div>
-                  <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg">
-                    <span className="text-sm text-gray-300 font-mono">
-                      {account.slice(0, 6)}...{account.slice(-4)}
+                  <div className="flex items-center space-x-1 sm:space-x-2 bg-gray-800/50 px-2 py-1 sm:px-3 sm:py-2 rounded-lg">
+                    <span className="text-xs sm:text-sm text-gray-300 font-mono">
+                      {account.slice(0, 4)}...{account.slice(-3)}
                     </span>
                     <button
                       onClick={copyAddress}
                       className="text-gray-400 hover:text-green-400 transition-colors"
                       title="复制地址"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
                     </button>
                     <button
                       onClick={disconnectWallet}
                       className="text-gray-400 hover:text-red-400 transition-colors"
                       title="断开连接"
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
                     </button>
                   </div>
                 </div>
@@ -286,13 +286,13 @@ export default function Home() {
                 <button
                   onClick={connectWallet}
                   disabled={isConnecting}
-                  className="bg-gradient-to-r from-green-400 to-purple-500 text-white px-6 py-2 rounded-lg font-medium glow-effect hover:from-green-500 hover:to-purple-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-green-400 to-purple-500 text-white px-4 py-1.5 sm:px-6 sm:py-2 rounded-lg text-sm sm:text-base font-medium glow-effect hover:from-green-500 hover:to-purple-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isConnecting ? '连接中...' : '连接钱包'}
                 </button>
               )}
               {error && (
-                <div className="text-red-400 text-sm bg-red-400/10 px-3 py-1 rounded">
+                <div className="text-red-400 text-xs sm:text-sm bg-red-400/10 px-2 py-1 sm:px-3 sm:py-1 rounded max-w-[120px] sm:max-w-none">
                   {error}
                   {error === '请先安装MetaMask钱包扩展' && (
                     <div className="mt-1">
@@ -300,9 +300,9 @@ export default function Home() {
                         href="https://metamask.io/download/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline"
+                        className="text-blue-400 hover:underline text-xs"
                       >
-                        点击下载MetaMask
+                        下载MetaMask
                       </a>
                     </div>
                   )}
@@ -320,18 +320,18 @@ export default function Home() {
           initial={isMounted ? { opacity: 0, y: 50 } : false}
           animate={isMounted ? { opacity: 1, y: 0 } : false}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-12 sm:mb-16"
         >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6">
             <span className="gradient-text">区块链投票</span>
             <br />
             <span className="text-white">安全透明</span>
           </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-xl text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
             基于区块链技术的去中心化投票平台，确保每一票都安全、透明、不可篡改
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-12">
             {[
               { icon: Lock, title: '安全可靠', desc: '区块链技术保障投票安全' },
               { icon: Shield, title: '透明公正', desc: '所有投票记录公开可查' },
@@ -342,26 +342,26 @@ export default function Home() {
                 initial={isMounted ? { opacity: 0, y: 30 } : false}
                 animate={isMounted ? { opacity: 1, y: 0 } : false}
                 transition={{ duration: 0.6, delay: index * 0.2 }}
-                className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+                className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800"
               >
-                <item.icon className="h-12 w-12 text-green-400 mb-4 mx-auto" />
-                <h3 className="text-xl font-semibold text-white mb-2">{item.title}</h3>
-                <p className="text-gray-400">{item.desc}</p>
+                <item.icon className="h-8 w-8 sm:h-12 sm:w-12 text-green-400 mb-2 sm:mb-4 mx-auto" />
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-1 sm:mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-sm sm:text-base">{item.desc}</p>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* 投票列表 */}
-        <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-white">正在进行中的投票</h2>
+        <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 md:p-8 border border-gray-800">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">正在进行中的投票</h2>
             <div className="flex space-x-2">
               {['active', 'ended'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-all ${
                     activeTab === tab
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -373,21 +373,21 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid gap-6">
+          <div className="grid gap-4 sm:gap-6">
             {filteredPolls.map((poll, index) => (
               <motion.div
                 key={poll.id}
                 initial={isMounted ? { opacity: 0, x: -50 } : false}
                 animate={isMounted ? { opacity: 1, x: 0 } : false}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 hover:border-green-400/50 transition-all duration-300"
+                className="bg-gray-800/50 rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-green-400/50 transition-all duration-300"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">{poll.title}</h3>
-                    <p className="text-gray-400">地址: {poll.address}</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start mb-3 sm:mb-4 space-y-2 sm:space-y-0">
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-1 sm:mb-2">{poll.title}</h3>
+                    <p className="text-gray-400 text-sm sm:text-base">地址: {poll.address}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${
                     poll.status === 'active' 
                       ? 'bg-green-500/20 text-green-400' 
                       : 'bg-gray-600 text-gray-300'
@@ -396,14 +396,14 @@ export default function Home() {
                   </span>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-4 text-sm text-gray-400">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-400">
                     <div className="flex items-center space-x-1">
-                      <Users className="h-4 w-4" />
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>{poll.vote_num} 票</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <TrendingUp className="h-4 w-4" />
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>创建时间: {poll.created_at ? new Date(poll.created_at).toLocaleDateString() : '未知'}</span>
                     </div>
                   </div>
@@ -412,9 +412,9 @@ export default function Home() {
                     <button 
                       onClick={() => voteOnPoll(poll.id!)}
                       disabled={votingPollId === poll.id}
-                      className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 sm:px-6 sm:py-2 rounded-lg text-sm sm:text-base font-medium flex items-center space-x-1 sm:space-x-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto justify-center"
                     >
-                      <Vote className="h-4 w-4" />
+                      <Vote className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>{votingPollId === poll.id ? '投票中...' : '立即投票'}</span>
                     </button>
                   )}
