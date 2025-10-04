@@ -3,7 +3,18 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Vote, Users, Lock, Zap, TrendingUp, Copy, LogOut } from 'lucide-react';
-import { MetaMaskSDK } from '@metamask/sdk';
+
+// 扩展Window接口以包含ethereum属性
+declare global {
+  interface Window {
+    ethereum?: {
+      request: (args: { method: string; params?: any[] }) => Promise<any>;
+      on: (event: string, callback: (...args: any[]) => void) => void;
+      removeListener: (event: string, callback: (...args: any[]) => void) => void;
+      selectedAddress?: string;
+    };
+  }
+}
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
