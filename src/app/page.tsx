@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Vote, Users, Lock, Zap, TrendingUp, Copy, LogOut } from 'lucide-react';
+import { getVotes, updateVoteCount, VoteRecord } from '@/lib/supabase';
 
 // 扩展Window接口以包含ethereum属性
 declare global {
@@ -49,35 +50,54 @@ export default function Home() {
       }
     };
 
+    // 从数据库加载投票数据
+    const loadVotesFromDatabase = async () => {
+      try {
+        const votes = await getVotes();
+        if (votes.length === 0) {
+          console.log('数据库为空，但由于RLS策略无法自动创建数据');
+          console.log('💡 请手动在Supabase仪表板中添加数据');
+          
+          // 创建本地模拟数据用于界面展示
+          const mockVotes: VoteRecord[] = [
+            {
+              id: 1,
+              title: '社区治理提案投票',
+              address: '0x0000000000000000000000000000000000000000',
+              vote_num: 1250,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: 2,
+              title: '技术升级方案选择',
+              address: '0x0000000000000000000000000000000000000000',
+              vote_num: 890,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: 3,
+              title: '预算分配方案',
+              address: '0x0000000000000000000000000000000000000000',
+              vote_num: 2100,
+              created_at: new Date().toISOString()
+            }
+          ];
+          
+          setPolls(mockVotes);
+        } else {
+          setPolls(votes);
+        }
+      } catch (error) {
+        console.error('加载投票数据失败:', error);
+        setError('加载投票数据失败');
+      }
+    };
+
     checkMetaMaskConnection();
+    loadVotesFromDatabase();
   }, []);
 
-  const [polls, setPolls] = useState([
-    {
-      id: 1,
-      title: '社区治理提案投票',
-      description: '决定是否实施新的社区治理机制',
-      votes: 1250,
-      endDate: '2024-12-31',
-      status: 'active'
-    },
-    {
-      id: 2,
-      title: '技术升级方案选择',
-      description: '选择下一阶段的技术升级方向',
-      votes: 890,
-      endDate: '2024-12-25',
-      status: 'active'
-    },
-    {
-      id: 3,
-      title: '预算分配方案',
-      description: '决定下一季度预算的分配比例',
-      votes: 2100,
-      endDate: '2024-11-30',
-      status: 'ended'
-    }
-  ]);
+  const [polls, setPolls] = useState<VoteRecord[]>([]);
 
   const connectWallet = async () => {
     setIsConnecting(true);
@@ -175,14 +195,22 @@ export default function Home() {
         // 模拟交易确认
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // 更新投票数
-        setPolls(prevPolls => 
-          prevPolls.map(poll => 
-            poll.id === pollId ? { ...poll, votes: poll.votes + 1 } : poll
-          )
-        );
-        
-        console.log(`投票 ${pollId} 成功完成！投票数已更新。`);
+        // 更新数据库中的投票数
+        const poll = polls.find(p => p.id === pollId);
+        if (poll) {
+          const success = await updateVoteCount(pollId, poll.vote_num + 1);
+          if (success) {
+            // 更新本地状态
+            setPolls(prevPolls => 
+              prevPolls.map(poll => 
+                poll.id === pollId ? { ...poll, vote_num: poll.vote_num + 1 } : poll
+              )
+            );
+            console.log(`投票 ${pollId} 成功完成！投票数已更新到数据库。`);
+          } else {
+            throw new Error('更新数据库失败');
+          }
+        }
       }
     } catch (err: any) {
       console.error('投票失败:', err);
@@ -192,7 +220,13 @@ export default function Home() {
     }
   };
 
-  const filteredPolls = polls.filter(poll => poll.status === activeTab);
+  // 为数据库返回的数据添加默认状态
+  const pollsWithStatus = polls.map(poll => ({
+    ...poll,
+    status: poll.vote_num > 2000 ? 'ended' : 'active'
+  }));
+  
+  const filteredPolls = pollsWithStatus.filter(poll => poll.status === activeTab);
 
   return (
     <div className="min-h-screen blockchain-grid">
@@ -334,7 +368,7 @@ export default function Home() {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-semibold text-white mb-2">{poll.title}</h3>
-                    <p className="text-gray-400">{poll.description}</p>
+                    <p className="text-gray-400">地址: {poll.address}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     poll.status === 'active' 
@@ -349,17 +383,16 @@ export default function Home() {
                   <div className="flex items-center space-x-4 text-sm text-gray-400">
                     <div className="flex items-center space-x-1">
                       <Users className="h-4 w-4" />
-                      <span>{poll.votes} 票</span>
+                      <span>{poll.vote_num} 票</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <TrendingUp className="h-4 w-4" />
-                      <span>截止: {poll.endDate}</span>
+                      <span>创建时间: {poll.created_at ? new Date(poll.created_at).toLocaleDateString() : '未知'}</span>
                     </div>
                   </div>
                   
-                  {poll.status === 'active' && (
+                  {poll.vote_num <= 2000 && (
                     <button 
-                      onClick={() => voteOnPoll(poll.id)}
                       disabled={votingPollId === poll.id}
                       className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

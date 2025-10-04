@@ -13,6 +13,7 @@
     "next": "15.5.4",
     "ethers": "^6.13.0",
     "@metamask/sdk": "0.33.1",
+    "@supabase/supabase-js": "^2.45.3",
     "lucide-react": "0.544.0",
     "framer-motion": "12.23.22"
   },
