@@ -1,6 +1,6 @@
 {
-  "name": "bb",
-  "version": "0.1.0",
+  "name": "blockchain-voting",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -10,10 +10,14 @@
   "dependencies": {
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.4"
+    "next": "15.5.4",
+    "ethers": "^6.13.0",
+    "@metamask/sdk": "0.33.1",
+    "lucide-react": "0.544.0",
+    "framer-motion": "12.23.22"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "typescript": "5.9.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
