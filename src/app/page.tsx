@@ -2,19 +2,46 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Vote, Users, Lock, Zap, TrendingUp } from 'lucide-react';
+import { Shield, Vote, Users, Lock, Zap, TrendingUp, Copy, LogOut } from 'lucide-react';
+import { MetaMaskSDK } from '@metamask/sdk';
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [account, setAccount] = useState('');
   const [activeTab, setActiveTab] = useState('active');
   const [isMounted, setIsMounted] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState('');
+  const [votingPollId, setVotingPollId] = useState<number | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
+    
+    // 检查MetaMask连接状态
+    const checkMetaMaskConnection = async () => {
+      try {
+        if (typeof window !== 'undefined' && window.ethereum) {
+          // 检查是否已连接
+          const provider = window.ethereum;
+          const accounts = await provider.request({
+            method: 'eth_accounts',
+            params: []
+          });
+          
+          if (accounts && accounts.length > 0) {
+            setIsConnected(true);
+            setAccount(accounts[0]);
+          }
+        }
+      } catch (err) {
+        console.error('检查MetaMask连接状态失败:', err);
+      }
+    };
+
+    checkMetaMaskConnection();
   }, []);
 
-  const polls = [
+  const [polls, setPolls] = useState([
     {
       id: 1,
       title: '社区治理提案投票',
@@ -39,12 +66,119 @@ export default function Home() {
       endDate: '2024-11-30',
       status: 'ended'
     }
-  ];
+  ]);
 
   const connectWallet = async () => {
-    // 模拟钱包连接
-    setIsConnected(true);
-    setAccount('0x742d35Cc6634C0532925a3b8...');
+    setIsConnecting(true);
+    setError('');
+    
+    try {
+      // 检查window.ethereum是否存在（MetaMask扩展）
+      if (typeof window !== 'undefined' && window.ethereum) {
+        console.log('检测到MetaMask扩展');
+        
+        // 使用MetaMask扩展的provider
+        const provider = window.ethereum;
+        
+        // 请求账户连接
+        console.log('正在请求账户连接...');
+        const accounts = await provider.request({
+          method: 'eth_requestAccounts',
+          params: []
+        });
+        console.log('账户连接结果:', accounts);
+
+      if (accounts && accounts.length > 0) {
+          setIsConnected(true);
+          setAccount(accounts[0]);
+          
+          // 监听账户变化
+          provider.on('accountsChanged', (newAccounts: string[]) => {
+            if (newAccounts.length === 0) {
+              // 用户断开连接
+              setIsConnected(false);
+              setAccount('');
+            } else {
+              // 账户切换
+              setAccount(newAccounts[0]);
+            }
+          });
+
+          // 监听链变化
+          provider.on('chainChanged', (chainId: string) => {
+            console.log('链已切换:', chainId);
+          });
+        }
+      } else {
+        // MetaMask未安装
+        setError('请先安装MetaMask钱包扩展');
+        console.log('未检测到MetaMask扩展，请确保已安装MetaMask');
+      }
+    } catch (err: any) {
+      console.error('钱包连接失败:', err);
+      if (err.code === 4001) {
+        setError('用户拒绝了连接请求');
+      } else if (err.code === -32002) {
+        setError('连接请求已在进行中，请检查MetaMask');
+      } else {
+        setError(err.message || '连接钱包失败');
+      }
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const disconnectWallet = () => {
+    setIsConnected(false);
+    setAccount('');
+    setError('');
+  };
+
+  const copyAddress = async () => {
+    if (account) {
+      try {
+        await navigator.clipboard.writeText(account);
+        // 可以添加复制成功的提示
+      } catch (err) {
+        console.error('复制地址失败:', err);
+      }
+    }
+  };
+
+  const voteOnPoll = async (pollId: number) => {
+    if (!isConnected) {
+      setError('请先连接钱包才能投票');
+      return;
+    }
+
+    setVotingPollId(pollId);
+    setError('');
+
+    try {
+      if (typeof window !== 'undefined' && window.ethereum) {
+        const provider = window.ethereum;
+        
+        // 模拟投票交易 - 实际项目中这里应该调用智能合约
+        console.log(`开始为投票 ${pollId} 进行投票...`);
+        
+        // 模拟交易确认
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 更新投票数
+        setPolls(prevPolls => 
+          prevPolls.map(poll => 
+            poll.id === pollId ? { ...poll, votes: poll.votes + 1 } : poll
+          )
+        );
+        
+        console.log(`投票 ${pollId} 成功完成！投票数已更新。`);
+      }
+    } catch (err: any) {
+      console.error('投票失败:', err);
+      setError(err.message || '投票失败，请重试');
+    } finally {
+      setVotingPollId(null);
+    }
   };
 
   const filteredPolls = polls.filter(poll => poll.status === activeTab);
@@ -64,19 +198,53 @@ export default function Home() {
               {!isMounted ? (
                 <div className="w-32 h-10 bg-gray-700 rounded-lg animate-pulse"></div>
               ) : isConnected ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-green-400 rounded-full pulse-animation"></div>
-                  <span className="text-sm text-gray-300">
-                    {account.slice(0, 6)}...{account.slice(-4)}
-                  </span>
+                  <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg">
+                    <span className="text-sm text-gray-300 font-mono">
+                      {account.slice(0, 6)}...{account.slice(-4)}
+                    </span>
+                    <button
+                      onClick={copyAddress}
+                      className="text-gray-400 hover:text-green-400 transition-colors"
+                      title="复制地址"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={disconnectWallet}
+                      className="text-gray-400 hover:text-red-400 transition-colors"
+                      title="断开连接"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <button
                   onClick={connectWallet}
-                  className="bg-gradient-to-r from-green-400 to-purple-500 text-white px-6 py-2 rounded-lg font-medium glow-effect hover:from-green-500 hover:to-purple-600 transition-all duration-300"
+                  disabled={isConnecting}
+                  className="bg-gradient-to-r from-green-400 to-purple-500 text-white px-6 py-2 rounded-lg font-medium glow-effect hover:from-green-500 hover:to-purple-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  连接钱包
+                  {isConnecting ? '连接中...' : '连接钱包'}
                 </button>
+              )}
+              {error && (
+                <div className="text-red-400 text-sm bg-red-400/10 px-3 py-1 rounded">
+                  {error}
+                  {error === '请先安装MetaMask钱包扩展' && (
+                    <div className="mt-1">
+                      <a 
+                        href="https://metamask.io/download/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:underline"
+                      >
+                        点击下载MetaMask
+                      </a>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -179,9 +347,13 @@ export default function Home() {
                   </div>
                   
                   {poll.status === 'active' && (
-                    <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-all duration-300">
+                    <button 
+                      onClick={() => voteOnPoll(poll.id)}
+                      disabled={votingPollId === poll.id}
+                      className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                       <Vote className="h-4 w-4" />
-                      <span>立即投票</span>
+                      <span>{votingPollId === poll.id ? '投票中...' : '立即投票'}</span>
                     </button>
                   )}
                 </div>
